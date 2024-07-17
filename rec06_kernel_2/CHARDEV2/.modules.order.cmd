@@ -1,0 +1,1 @@
+cmd_/home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/modules.order := {   echo /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.ko; :; } | awk '!x[$$0]++' - > /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/modules.order

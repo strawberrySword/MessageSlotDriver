@@ -1,0 +1,1 @@
+cmd_/home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.ko := ld -r -m elf_x86_64 -z noexecstack --build-id=sha1  -T arch/x86/module.lds -o /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.ko /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.o /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.mod.o;  true

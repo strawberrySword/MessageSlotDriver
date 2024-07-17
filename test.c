@@ -21,7 +21,7 @@ void create_device_files()
     {
         char device_path[20];
         sprintf(device_path, "%s%d", DEVICE_FILE_PATH, i);
-        if (mknod(device_path, S_IFCHR | 0666, makedev(MAJOR_NUM, i)) < 0)
+        if (mknod(device_path, 0666, makedev(MAJOR_NUM, i)) < 0)
         {
             perror("mknod");
             exit(1);

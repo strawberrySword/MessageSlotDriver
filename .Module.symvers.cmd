@@ -1,0 +1,1 @@
+cmd_/home/student/MessageSlotDriver/Module.symvers := sed 's/ko$$/o/' /home/student/MessageSlotDriver/modules.order | scripts/mod/modpost -m    -o /home/student/MessageSlotDriver/Module.symvers -e -i Module.symvers   -T -

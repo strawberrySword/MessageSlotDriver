@@ -1,0 +1,1 @@
+cmd_/home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.mod := { echo  /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.o;  echo; } > /home/student/MessageSlotDriver/rec06_kernel_2/CHARDEV2/chardev.mod
