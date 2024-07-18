@@ -51,12 +51,16 @@ static ssize_t device_read(struct file *file, char __user *buffer, size_t length
 {
     message_channel *channel = (message_channel *)file->private_data;
 
-    if (channel == NULL || channel->message == NULL)
+    if (buffer == NULL)
+        return -EINVAL;
+
+    if (channel == NULL || channel->message == NULL || channel->length == 0)
         return -EWOULDBLOCK;
 
     if (channel->length > length)
         return -ENOSPC;
 
+    printk("read: on channel: %i, message:%s, message length: %i\n", channel->channel_id, channel->message, channel->length);
     return length - copy_to_user(buffer, channel->message, length);
 }
 
@@ -65,7 +69,7 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
     int bytes_written;
     message_channel *channel = (message_channel *)file->private_data;
 
-    if (channel == NULL)
+    if (channel == NULL || buffer == NULL)
         return -EINVAL;
 
     if (length == 0 || length > BUF_SIZE)
@@ -73,6 +77,7 @@ static ssize_t device_write(struct file *file, const char __user *buffer, size_t
 
     bytes_written = length - copy_from_user(channel->message, buffer, length);
     channel->length = bytes_written;
+    printk("write: on channel: %i, message:%s, message length: %i\n", channel->channel_id, channel->message, channel->length);
     return bytes_written;
 }
 
@@ -99,7 +104,7 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
 
     while (curr != NULL)
     {
-        if (curr->channel_id == minor_num)
+        if (curr->channel_id == ioctl_param)
         {
             file->private_data = curr;
             return 0;
@@ -109,18 +114,24 @@ static long device_ioctl(struct file *file, unsigned int ioctl_command_id, unsig
     }
 
     channel = (message_channel *)kmalloc(sizeof(message_channel), GFP_KERNEL);
-    channel->channel_id = minor_num;
+    if (channel == NULL)
+    {
+        printk("failed aloccate channel\n");
+        return -ENOMEM;
+    }
+    channel->channel_id = ioctl_param;
+    channel->length = 0;
     channel->next = NULL;
+
+    file->private_data = channel;
 
     if (prev == NULL)
     {
-        prev = channel;
-        file->private_data = prev;
+        message_slots[minor_num] = channel;
         return 0;
     }
 
     prev->next = channel;
-    file->private_data = channel;
 
     return 0;
 }
@@ -150,7 +161,6 @@ static int __init simple_init(void)
         return rc;
     }
 
-    printk("heyeyeeyeyyeyeyeyeyeyafaefaeh");
     for (i = 0; i < MAX_MINOR_NUM; i++)
     {
         message_slots[i] = NULL;

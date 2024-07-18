@@ -12,7 +12,7 @@
 
 #define DEVICE_FILE_PATH "/dev/msg_slot"
 #define MAJOR_NUM 235
-#define MSG_SLOT_CHANNEL _IOW(MAJOR_NUM, 0, unsigned int)
+#define MSG_SLOT_CHANNEL _IOW(MAJOR_NUM, 0, unsigned long)
 #define BUF_LEN 128
 
 void create_device_files()
@@ -21,7 +21,7 @@ void create_device_files()
     {
         char device_path[20];
         sprintf(device_path, "%s%d", DEVICE_FILE_PATH, i);
-        if (mknod(device_path, 0666, makedev(MAJOR_NUM, i)) < 0)
+        if (mknod(device_path, S_IFCHR | 0666, makedev(MAJOR_NUM, i)) < 0)
         {
             perror("mknod");
             exit(1);
@@ -219,6 +219,8 @@ int two_processes_on_device_test()
         // Child process
         int fd;
         char *msg = "Child process message";
+        char buffer[BUF_LEN];
+
         fd = open(DEVICE_FILE_PATH "0", O_RDWR);
         if (fd < 0)
         {
@@ -239,6 +241,18 @@ int two_processes_on_device_test()
             close(fd);
             exit(1);
         }
+        int bytes_read = read(fd, buffer, BUF_LEN);
+        printf("childern bytes read: %s\n", buffer);
+
+        if (ioctl(fd, MSG_SLOT_CHANNEL, 2) < 0)
+        {
+            perror("ioctl parent");
+            close(fd);
+            return 1;
+        }
+
+        bytes_read = read(fd, buffer, BUF_LEN);
+        printf("bytes read: %s\n", buffer);
 
         close(fd);
         exit(0);
@@ -271,6 +285,8 @@ int two_processes_on_device_test()
             close(fd);
             return 1;
         }
+        bytes_read = read(fd, buffer, BUF_LEN);
+        printf("bytes read: %s\n", buffer);
 
         waitpid(pid, &status, 0);
 
@@ -299,6 +315,7 @@ int two_processes_on_device_test()
         buffer[bytes_read] = '\0';
         if (strcmp(buffer, "Child process message") != 0)
         {
+            printf("\nbytes read1: %i\n", bytes_read);
             fprintf(stderr, "Message mismatch: expected \"Child process message\", got \"%s\"\n", buffer);
             close(fd);
             return 1;
